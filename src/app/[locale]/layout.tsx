@@ -7,19 +7,34 @@ interface Props {
   children: ReactNode;
 }
 
+interface Messages {
+  title: string;
+  description: string;
+}
+
 const LocaleLayout = async ({ children, params }: Props) => {
   const locale = params.locale;
   if (!locale) notFound();
-  const messages = await import(`../../locales/${locale}.json`).then(
-    (m) => m.default
-  );
+  let messages: Messages;
+  try {
+    messages = await import(`../../../locales/${locale}.json`).then(
+      (m) => m.default as Messages
+    );
+  } catch {
+    notFound();
+  }
+
   return (
-    <html lang={locale} dir={locale === "fa" ? "rtl" : "ltr"}>
+    <div dir={locale === "fa" ? "rtl" : "ltr"}>
       <NextIntlClientProvider locale={locale} messages={messages}>
         {children}
       </NextIntlClientProvider>
-    </html>
+    </div>
   );
 };
+
+export async function generateStaticParams() {
+  return [{ locale: "en" }, { locale: "fa" }];
+}
 
 export default LocaleLayout;
